@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>NDC | Neuro Design Club</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- СТИЛИ (CSS) --- */
+        :root {
+            --bg-color: #030320;
+            --accent-color: #00F0FF;
+            --secondary-accent: #9D00FF; /* Фиолетовый для видео-нейронок */
+            --text-color: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0; padding: 0; box-sizing: border-box;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .btn-glitch, .ticker-item, .logo { font-family: 'Orbitron', sans-serif; }
+        
+        /* Фон */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #0a0a2e 0%, #000000 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Шапка */
+        header {
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            background: rgba(3, 3, 32, 0.9);
+        }
+
+        .logo { font-weight: 900; letter-spacing: 2px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        .status-badge {
+            font-family: 'Inter';
+            font-size: 12px;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .dot { width: 6px; height: 6px; background: #00ff00; border-radius: 50%; box-shadow: 0 0 5px #00ff00; }
+
+        .btn-glitch {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .btn-glitch:hover {
+            background: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* Первый экран */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 5vw, 70px);
+            margin: 0 0 20px 0;
+            line-height: 1.1;
+            background: linear-gradient(90deg, #fff, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        }
+
+        .hero p {
+            max-width: 700px;
+            font-size: 18px;
+            margin-bottom: 40px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .cta-btn {
+            background: var(--accent-color);
+            color: #000;
+            padding: 15px 40px;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: 'Orbitron';
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 240, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+        }
+
+        /* Бегущая строка */
+        .ticker-wrap {
+            width: 100%;
+            background: var(--glass-bg);
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+            overflow: hidden;
+            padding: 15px 0;
+        }
+        .ticker {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 25s linear infinite;
+        }
+        .ticker-item {
+            color: rgba(255,255,255,0.6);
+            font-size: 16px;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+        }
+        .ticker-item span { color: var(--accent-color); margin-right: 10px; }
+        
+        @keyframes ticker { 100% { transform: translateX(-50%); } }
+
+        /* Сетка преимуществ */
+        .features { padding: 80px 0; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .card h3 { 
+            color: var(--accent-color); 
+            margin-bottom: 15px; 
+            font-size: 18px;
+            display: flex; 
+            justify-content: space-between;
+        }
+        
+        .card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card li {
+            margin-bottom: 8px;
+            color: #ccc;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card li::before {
+            content: '>';
+            color: var(--secondary-accent);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        /* Сообщество */
+        .community-stats {
+            margin-top: 100px;
+            text-align: center;
+            padding: 40px;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0) 100%);
+        }
+        
+        .stat-number {
+            font-size: 50px;
+            font-weight: 900;
+            color: var(--text-color);
+            font-family: 'Orbitron';
+        }
+        .stat-label { color: #888; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-container"></canvas>
+
+    <header>
+        <div class="container" style="display:flex; justify-content:space-between; width:100%;">
+            <div class="logo">
+                NDC 
+                <div class="status-badge"><div class="dot"></div> 662 online</div>
+            </div>
+            <button class="btn-glitch">ВСТУПИТЬ</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>ВСЕЛЕННАЯ<br>НЕЙРОСЕТЕЙ</h1>
+            <p>Единый доступ к Runway, Midjourney, Recraft, ChatGPT и Topaz. <br>Генерация видео, графики и текста в одном закрытом клубе.</p>
+            <a href="#" class="cta-btn">ПОЛУЧИТЬ ДОСТУП</a>
+        </div>
+    </section>
+
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <div class="ticker-item"><span>//</span> MIDJOURNEY V6</div>
+            <div class="ticker-item"><span>//</span> RUNWAY GEN-3</div>
+            <div class="ticker-item"><span>//</span> HAILUO AI</div>
+            <div class="ticker-item"><span>//</span> LUMA DREAM MACHINE</div>
+            <div class="ticker-item"><span>//</span> RECRAFT AI</div>
+            <div class="ticker-item"><span>//</span> IDEOGRAM</div>
+            <div class="ticker-item"><span>//</span> TOPAZ LABS</div>
+            <div class="ticker-item"><span>//</span> CHATGPT 4o</div>
+            <div class="ticker-item"><span>//</span> PHOTOROOM</div>
+            <div class="ticker-item"><span>//</span> MIDJOURNEY V6</div>
+            <div class="ticker-item"><span>//</span> RUNWAY GEN-3</div>
+            <div class="ticker-item"><span>//</span> HAILUO AI</div>
+            <div class="ticker-item"><span>//</span> LUMA DREAM MACHINE</div>
+            <div class="ticker-item"><span>//</span> RECRAFT AI</div>
+        </div>
+    </div>
+
+    <section class="features">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom: 50px;">ТВОЙ АРСЕНАЛ</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>01 VIDEO GEN <span style="color:var(--secondary-accent)">NEW</span></h3>
+                    <ul>
+                        <li>Runway Gen-3 Alpha</li>
+                        <li>Luma Dream Machine</li>
+                        <li>Hailuo AI</li>
+                        <li>Pika Labs</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>02 VISUAL ART</h3>
+                    <ul>
+                        <li>Midjourney (Безлимит)</li>
+                        <li>ReCraft (Вектор & Растр)</li>
+                        <li>Ideogram (Текст на фото)</li>
+                        <li>DALL-E 3</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>03 UTILITIES</h3>
+                    <ul>
+                        <li>Topaz Labs (Upscale фото/видео)</li>
+                        <li>Photoroom (Удаление фона)</li>
+                        <li>ChatGPT 4o (Кодинг, тексты)</li>
+                        <li>VPN (Доступ без проблем)</li>
+                    </ul>
+                </div>
+                <div class="card" style="border-color: var(--secondary-accent);">
+                    <h3>04 CLUB LIFE</h3>
+                    <ul>
+                        <li>Чат заказов и работы</li>
+                        <li>Конкурсы нейро-арта</li>
+                        <li>Разборы "неудачных" генераций</li>
+                        <li>Приватные гайды и промпты</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="community-stats">
+                <div class="stat-number">660+</div>
+                <div class="stat-label">УЧАСТНИКОВ УЖЕ ВНУТРИ</div>
+                <p style="max-width: 500px; margin: 20px auto 0; color: #aaa;">
+                    Мы не просто делим подписку. Мы создаем рынок нейро-услуг, учимся и делимся заказами.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Тот же скрипт анимации частиц (он идеально подходит)
+        const canvas = document.getElementById('canvas-container');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.directionX = (Math.random() * 0.3) - 0.15;
+                this.directionY = (Math.random() * 0.3) - 0.15;
+                this.size = Math.random() * 2;
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                this.x += this.directionX;
+                this.y += this.directionY;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#00F0FF';
+                ctx.fill();
+            }
+        }
+        function init() {
+            particlesArray = [];
+            for (let i = 0; i < 80; i++) particlesArray.push(new Particle());
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                for (let j = i; j < particlesArray.length; j++) {
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    if (distance < 120) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 240, 255, ${1 - distance/120})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        init();
+        animate();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+    </script>
+</body>
+  </html>
+  

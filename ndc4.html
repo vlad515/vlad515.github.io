@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>NDC | System Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --terminal-green: #33ff00;
+            --terminal-dim: #1a8000;
+            --text-white: #e0e0e0;
+            --alert: #ff3333;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: 'Fira Code', monospace;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* --- ЭФФЕКТ СТАРОГО МОНИТОРА (CRT) --- */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        a { color: inherit; text-decoration: none; border-bottom: 1px dashed var(--terminal-dim); }
+        a:hover { background: var(--text-white); color: var(--bg-color); }
+
+        /* --- ЗАГРУЗОЧНЫЙ ЭКРАН --- */
+        #boot-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 1000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .log-line { color: var(--terminal-dim); margin-bottom: 5px; }
+        .log-success { color: var(--terminal-green); }
+
+        /* --- ОСНОВНОЙ КОНТЕНТ --- */
+        #main-interface {
+            display: none; /* Скрыт до конца загрузки */
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 2px solid var(--text-white);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        .ascii-logo {
+            white-space: pre;
+            font-size: 10px;
+            line-height: 10px;
+            color: var(--terminal-green);
+            margin-bottom: 20px;
+            overflow-x: hidden;
+        }
+
+        .system-status {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--terminal-dim);
+            padding: 10px;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+
+        /* --- ФАЙЛОВАЯ СТРУКТУРА --- */
+        .directory {
+            margin-left: 20px;
+            border-left: 1px solid var(--terminal-dim);
+            padding-left: 20px;
+        }
+
+        .folder {
+            color: var(--terminal-green);
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .folder::before { content: "[+] "; }
+        .folder.open::before { content: "[-] "; }
+
+        .file {
+            margin-left: 20px;
+            color: var(--text-white);
+            display: block;
+            margin-top: 5px;
+            opacity: 0.8;
+            transition: 0.2s;
+        }
+        .file::before { content: "./ "; color: #666; }
+        .file:hover { opacity: 1; padding-left: 5px; color: var(--terminal-green); }
+
+        .tag {
+            background: #222;
+            padding: 2px 6px;
+            font-size: 10px;
+            border-radius: 2px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        /* --- БЛОК ВВОДА --- */
+        .command-line {
+            margin-top: 50px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .prompt { color: var(--terminal-green); margin-right: 10px; }
+        .cursor {
+            width: 10px; height: 18px;
+            background: var(--terminal-green);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .btn-join {
+            background: var(--terminal-green);
+            color: black;
+            padding: 15px 30px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-join:hover {
+            background: white;
+            box-shadow: 0 0 10px white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="boot-screen">
+        <div id="logs"></div>
+    </div>
+
+    <div id="main-interface">
+        <header>
+            <div class="ascii-logo">
+  _   _  _____   _____ 
+ | \ | ||  __ \ / ____|
+ |  \| || |  | || |     
+ | . ` || |  | || |     
+ | |\  || |__| || |____ 
+ |_| \_||_____/ \_____|
+ // NEURO DESIGN CLUB v.2.0
+            </div>
+            <div>> WELCOME, USER. SYSTEM READY.</div>
+        </header>
+
+        <div class="system-status">
+            <span>MEMBERS_ONLINE: 662</span>
+            <span>SERVER_LOAD: 84%</span>
+            <span>DATABASE: UPDATED 12 MIN AGO</span>
+        </div>
+
+        <p style="margin-bottom: 30px; color: #888;">
+            > Экосистема доступа к нейросетям. Выберите категорию для развертывания списка инструментов:
+        </p>
+
+        <div class="root">
+            
+            <div class="folder open">/VIDEO_GENERATION/</div>
+            <div class="directory">
+                <a href="#" class="file">Runway_Gen-3_Alpha.exe <span class="tag">HOT</span></a>
+                <a href="#" class="file">Luma_Dream_Machine.v2</a>
+                <a href="#" class="file">Hailuo_AI.mod</a>
+                <a href="#" class="file">Pika_Labs.tool</a>
+            </div>
+
+            <div class="folder open">/IMAGE_SYNTHESIS/</div>
+            <div class="directory">
+                <a href="#" class="file">Midjourney_v6.access <span class="tag">UNLIMITED</span></a>
+                <a href="#" class="file">ReCraft_Vector.svg</a>
+                <a href="#" class="file">Ideogram_Text.font</a>
+                <a href="#" class="file">DALL-E_3.openai</a>
+            </div>
+
+            <div class="folder">/UTILITIES/</div>
+            <div class="directory">
+                <a href="#" class="file">Topaz_Labs_Upscaler.dll</a>
+                <a href="#" class="file">Photoroom_RemoveBG.script</a>
+                <a href="#" class="file">VPN_Access_Key.secure</a>
+            </div>
+
+            <div class="folder">/COMMUNITY_DATA/</div>
+            <div class="directory">
+                <a href="#" class="file">Orders_and_Jobs.log <span class="tag">ACTIVE</span></a>
+                <a href="#" class="file">Contests_Archive.zip</a>
+                <a href="#" class="file">Fail_Generations_Fun.img</a>
+            </div>
+
+        </div>
+
+        <div class="command-line">
+            <span class="prompt">root@ndc:~#</span>
+            <span style="color:white">sudo join_club --force</span>
+            <div class="cursor"></div>
+        </div>
+
+        <a href="#" class="btn-join"> > ПОЛУЧИТЬ ДОСТУП</a>
+
+        <div style="margin-top: 50px; font-size: 10px; color: #444;">
+            RUNNING ON NDC KERNEL 4.0.2 <br>
+            COPYRIGHT © 2024
+        </div>
+    </div>
+
+    <script>
+        // Скрипт имитации загрузки (Boot Sequence)
+        const logsContainer = document.getElementById('logs');
+        const bootScreen = document.getElementById('boot-screen');
+        const mainInterface = document.getElementById('main-interface');
+
+        const logMessages = [
+            "Initializing kernel...",
+            "Loading modules: [Midjourney, Runway, Luma]...",
+            "Checking integrity... OK",
+            "Connecting to neural grid...",
+            "Bypassing limitations... SUCCESS",
+            "Establishing secure connection (VPN)...",
+            "Access granted to user.",
+            "Starting NDC Interface..."
+        ];
+
+        let delay = 0;
+
+        logMessages.forEach((msg, index) => {
+            setTimeout(() => {
+                const div = document.createElement('div');
+                div.className = 'log-line';
+                if(index === logMessages.length - 1) div.className += ' log-success';
+                div.textContent = `> ${msg}`;
+                logsContainer.appendChild(div);
+            }, delay);
+            delay += Math.random() * 500 + 200; // Случайная задержка
+        });
+
+        // Скрыть экран загрузки через 4.5 секунды
+        setTimeout(() => {
+            bootScreen.style.display = 'none';
+            mainInterface.style.display = 'block';
+        }, 4500);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vlad | Motion This</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #e0e0e0;
+            --accent: #00C2FF;
+            --panel: #111;
+            --border: #222;
+            --font: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            overflow-x: hidden;
+            line-height: 1.6;
+            /* Фоновая сетка */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo-mini { font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px; color: #fff; }
+        .nav-links a {
+            color: #888;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .btn-cta {
+            padding: 8px 20px;
+            background: var(--text);
+            color: var(--bg);
+            border-radius: 50px;
+            font-weight: 700;
+            margin-left: 20px;
+            text-decoration: none;
+        }
+        .btn-cta:hover { background: var(--accent); }
+
+        /* --- HERO --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* LOGO ANIMATION STYLES */
+        .logo-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 9vw; /* Крупно */
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            overflow: hidden;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .word-motion { color: #fff; margin-right: 0.2em; display: inline-block; }
+        .spinner-box { height: 1em; overflow: hidden; position: relative; display: flex; flex-direction: column; vertical-align: bottom; }
+        .spinner-list { display: flex; flex-direction: column; }
+        .spin-item { height: 1em; display: flex; align-items: center; color: var(--accent); transform: translateY(-3%); }
+
+        /* Intro Text */
+        .hero-text {
+            max-width: 700px;
+            opacity: 0; /* Hidden initially */
+            transform: translateY(20px);
+        }
+        .hero-text h1 { font-size: 2rem; margin-bottom: 20px; line-height: 1.2; }
+        .hero-text p { color: #888; font-size: 1.1rem; margin-bottom: 30px; }
+        .hero-highlight { color: var(--accent); }
+
+        /* --- SECTIONS COMMON --- */
+        section {
+            padding: 100px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 40px;
+            letter-spacing: -1px;
+            display: inline-block;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* --- GRID LAYOUTS --- */
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 35px;
+            border-radius: 20px;
+            transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 194, 255, 0.1);
+        }
+        .card h3 { font-size: 1.5rem; margin-bottom: 15px; color: #fff; }
+        .card p { color: #aaa; font-size: 0.95rem; margin-bottom: 20px; }
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #222;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #fff;
+            margin-top: auto;
+        }
+
+        /* --- SPECIAL BLOCKS --- */
+        
+        /* Wife Search Block */
+        .wife-block {
+            background: linear-gradient(145deg, #111, #0a0a0a);
+            border: 1px solid #333;
+        }
+        .wife-block.active { border-color: var(--accent); }
+        
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;
+        }
+        .toggle-switch {
+            width: 50px; height: 28px; background: #333; border-radius: 50px;
+            position: relative; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-knob {
+            width: 24px; height: 24px; background: #fff; border-radius: 50%;
+            position: absolute; top: 2px; left: 2px; transition: 0.3s;
+        }
+        .wife-block.active .toggle-switch { background: var(--accent); }
+        .wife-block.active .toggle-knob { transform: translateX(22px); }
+
+        /* Services List */
+        .service-item {
+            border-bottom: 1px solid #222;
+            padding: 20px 0;
+        }
+        .service-item h4 { color: #fff; margin-bottom: 5px; font-size: 1.2rem; }
+        .service-item p { font-size: 0.9rem; color: #777; }
+
+        /* Podcast */
+        .podcast-banner {
+            background: #111;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 80px 20px;
+            text-align: center;
+            border-top: 1px solid #222;
+            margin-top: 50px;
+        }
+        .contact-link {
+            font-size: 1.5rem;
+            color: #fff;
+            text-decoration: none;
+            border-bottom: 1px solid #555;
+            transition: 0.3s;
+        }
+        .contact-link:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Glitch Effect Class */
+        .glitch-text { position: relative; color: var(--accent); }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.7;
+        }
+        .glitch-text::before { color: #ff00ff; animation: glitch 0.4s infinite; clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%); transform: translate(-2px, 2px); }
+        .glitch-text::after { color: #00ffff; animation: glitch 0.4s infinite reverse; clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%); transform: translate(2px, -2px); }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links { display: none; } /* Mobile menu simplified */
+            .logo-wrapper { font-size: 13vw; flex-direction: column; gap: 10px; }
+            .section-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-mini">M / T</div>
+        <div class="nav-links">
+            <a href="#about">О себе</a>
+            <a href="#portfolio">Портфолио</a>
+            <a href="#services">Услуги</a>
+            <a href="#contacts">Контакты</a>
+        </div>
+        <a href="https://t.me/MotionThis" target="_blank" class="btn-cta">Telegram</a>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="logo-wrapper">
+            <div class="word-motion">MOTION</div>
+            <div class="spinner-box">
+                <div class="spinner-list">
+                    <div class="spin-item">STORIES</div>
+                    <div class="spin-item">AI</div>
+                    <div class="spin-item">CATS</div>
+                    <div class="spin-item">CHAOS</div>
+                    <div class="spin-item">FUTURE</div>
+                    <div class="spin-item">WIFE?</div>
+                    <div class="spin-item">THIS</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hero-text">
+            <h1>Привет, я Влад. <br>Моушен-дизайнер, продюсер и собиратель историй.</h1>
+            <p>
+                Собираю визуал из нейросетей, 3D и старой VHS-пыли. 
+                Работаю там, где технологии встречаются с человеческими эмоциями.
+            </p>
+            <p style="font-size: 0.9rem; opacity: 0.7;">
+                А ещё веду подкаст и <span style="border-bottom: 1px dashed var(--accent)">ищу жену</span>.
+            </p>
+        </div>
+    </section>
+
+    <!-- ABOUT & WIFE -->
+    <section id="about">
+        <h2 class="section-title">О себе</h2>
+        <div class="grid-2">
+            <div>
+                <p style="margin-bottom: 20px; font-size: 1.1rem;">
+                    Мой стиль родился где-то между моушен-дизайном, сторителлингом и нейротехнологиями. Я люблю, когда работа не только выглядит красиво, но и оставляет послевкусие. Когда внутри есть мысль или маленькая человеческая трещинка.
+                </p>
+                <p style="color: #777;">
+                    Stack: AE, Runway, Midjourney v7, Flux и всё, что оживляет картинку.
+                </p>
+            </div>
+            
+            <!-- ACTIVE WIFE SEARCH BLOCK -->
+            <div class="card wife-block active" id="wife-card">
+                <h3>💍 Project: Wife</h3>
+                <p>
+                    Да, я мужчина, который в поиске жены. Желательно той, кто понимает, что рендер может занять всю ночь. Без спешки, по настроению.
+                </p>
+                <div class="toggle-row">
+                    <span style="font-size: 0.9rem; color: #fff;">Статус поиска</span>
+                    <div class="toggle-switch" onclick="toggleWife()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <span class="status-text" id="status-label" style="color: #00C2FF; font-size: 0.8rem; margin-top: 10px; display:block; font-weight:bold;">SCANNING... 🟢</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="portfolio">
+        <h2 class="section-title">Портфолио</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="glitch-text" data-text="Ошибка Памяти">Ошибка Памяти</h3>
+                <p>Glitch in the Memory. Видео-проект в эстетике VHS-ностальгии и киберпанка. Девушка находит AR-навигатор, который показывает цифровые призраки.</p>
+                <span class="tag">VHS / Cyberpunk</span>
+            </div>
+            <div class="card">
+                <h3>💳 Реклама карты Гусь</h3>
+                <p>Молодёжный банк, море юмора и неограниченный бюджет на фантазию. Микс AI-черновиков и 3D-приёмов.</p>
+                <span class="tag">Commercial / AI</span>
+            </div>
+            <div class="card">
+                <h3>🐉 Ролик с Драконом</h3>
+                <p>45 секунд чистой магии без съёмок: стоки, 3D и аккуратная режиссура.</p>
+                <span class="tag">3D / Editing</span>
+            </div>
+            <div class="card">
+                <h3>🐱 Стикерпаки</h3>
+                <p>Пуньк и Коты. Целый пласт кото-вселенской культуры. Мемы, эмоции и утилитарные фразы.</p>
+                <span class="tag">Illustration / Telegram</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- PODCAST & CHANNEL -->
+    <section>
+        <div class="grid-2">
+            <div class="card">
+                <h3>🎙 Три секунды motion</h3>
+                <p>Подкаст о моушене, жизни и рабочих приключениях. Обсуждаем индустрию, провалы и странные штуки, которые происходят между рендерами.</p>
+                <a href="#" style="color: var(--accent);">Слушать выпуск →</a>
+            </div>
+            <div class="card" style="border-color: var(--accent);">
+                <h3>⚡️ Motion This</h3>
+                <p>Мой личный канал. Факапы, кривые решения, внезапные озарения, AI и немного философии. Честно, без позы и пафоса.</p>
+                <a href="https://t.me/MotionThis" style="color: var(--accent);">Перейти в канал →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services">
+        <h2 class="section-title">Услуги</h2>
+        <div class="grid-3">
+            <div class="service-item">
+                <h4>Моушен-дизайн</h4>
+                <p>Концепты, визуал, динамика.</p>
+            </div>
+            <div class="service-item">
+                <h4>3D-элементы</h4>
+                <p>От деталей до сцен.</p>
+            </div>
+            <div class="service-item">
+                <h4>AI-визуал</h4>
+                <p>Мудборды, аниматики, генерации.</p>
+            </div>
+            <div class="service-item">
+                <h4>Креатив</h4>
+                <p>Придумать тон и атмосферу.</p>
+            </div>
+            <div class="service-item">
+                <h4>Консультации</h4>
+                <p>Разложить идею по полкам.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER / CONTACTS -->
+    <section id="contacts">
+        <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+            <h2 style="margin-bottom: 30px;">Контакты</h2>
+            <p style="margin-bottom: 40px; color: #aaa;">
+                Если хочешь сделать проект, позвать в команду или просто поболтать. <br>
+                И да, если ты тоже сидишь по вечерам за компом и любишь котов — не исключено, что <b>я ищу тебя</b>.
+            </p>
+            <a href="https://t.me/MotionThis" class="contact-link">Telegram</a>
+            <br><br>
+            <a href="mailto:vlad@motionthis.ru" class="contact-link" style="font-size: 1.2rem;">Email</a>
+        </div>
+    </section>
+
+    <footer>
+        <p style="font-size: 0.8rem; color: #555;">
+            MOTION THIS © 2024. Сделано на чистом креативе и кофе.
+        </p>
+    </footer>
+
+    <script>
+        // Register ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. LOGO ANIMATION (SLOW & CENTERED)
+        gsap.set(".word-motion", { x: -100, opacity: 0 });
+        gsap.set(".spinner-list", { y: "0%" });
+
+        const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+        tl.to(".word-motion", { 
+            duration: 2, // SLOW START
+            x: 0, 
+            opacity: 1, 
+            delay: 0.5 
+        })
+        .to(".spinner-list", {
+            duration: 4.5, // SLOW SPIN
+            y: "-85.7%",
+            ease: "elastic.out(1, 0.7)",
+        }, "-=1.5")
+        
+        // Intro Text Animation
+        .to(".hero-text", {
+            duration: 1.5,
+            y: 0,
+            opacity: 1
+        }, "-=3.0");
+
+        // 2. SCROLL ANIMATIONS (FADE UP SECTIONS)
+        gsap.utils.toArray("section h2, .card, .service-item").forEach(element => {
+            gsap.from(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse"
+                },
+                y: 30,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out"
+            });
+        });
+
+        // 3. WIFE TOGGLE INTERACTIVITY
+        let isSearching = true; 
+        function toggleWife() {
+            const card = document.getElementById('wife-card');
+            const label = document.getElementById('status-label');
+            
+            isSearching = !isSearching;
+            
+            if (isSearching) {
+                card.classList.add('active');
+                label.innerText = "SCANNING... 🟢";
+                label.style.color = "#00C2FF";
+                gsap.to(card, { scale: 1.02, duration: 0.1, yoyo: true, repeat: 1 });
+            } else {
+                card.classList.remove('active');
+                label.innerText = "PAUSED 🔴";
+                label.style.color = "#555";
+            }
+        }
+
+        // 4. GLITCH EFFECT LOOP
+        setInterval(() => {
+            const glitch = document.querySelector('.glitch-text');
+            if(glitch && Math.random() > 0.9) {
+                glitch.style.opacity = 0.5;
+                setTimeout(() => glitch.style.opacity = 1, 50);
+                setTimeout(() => glitch.style.opacity = 0.5, 100);
+                setTimeout(() => glitch.style.opacity = 1, 150);
+            }
+        }, 2000);
+
+    </script>
+</body>
+</html>

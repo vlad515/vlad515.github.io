@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АРХИВ "МОСГУСЬФИЛЬМ" // ТЕРМИНАЛ 73-Б</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --phosphor-green: #39ff14;
+            --bg-color: #0a0a0a;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--phosphor-green);
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Эффект старого монитора */
+        #crt-screen {
+            width: 90%;
+            height: 90%;
+            background: #000;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: inset 0 0 50px var(--phosphor-green), 0 0 20px var(--phosphor-green);
+            position: relative;
+            overflow-y: auto;
+            border: 3px solid #333;
+        }
+
+        /* Сканлайны и мерцание */
+        #crt-screen::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #crt-screen::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.27861; }
+            5% { opacity: 0.34769; }
+            10% { opacity: 0.23604; }
+            /* ... можно продолжить для реализма ... */
+            100% { opacity: 0.27861; }
+        }
+        
+        /* Свечение текста */
+        .text-glow {
+            text-shadow: 0 0 5px var(--phosphor-green);
+        }
+
+        #output {
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            margin-right: 10px;
+        }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            color: var(--phosphor-green);
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            outline: none;
+            flex-grow: 1;
+            text-shadow: 0 0 5px var(--phosphor-green);
+            text-transform: uppercase;
+        }
+        
+        /* Мигающий курсор */
+        .cursor-blink {
+             animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .glitch-text {
+            animation: glitch 0.3s linear infinite;
+            color: red;
+        }
+        
+        @keyframes glitch {
+          2%, 64% { transform: translate(2px,0) skew(0deg); }
+          4%, 60% { transform: translate(-2px,0) skew(0deg); }
+          62% { transform: translate(0,0) skew(5deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="crt-screen" class="text-glow">
+        <div id="boot-sequence">
+            Initializing MOSGUSFILM Archive Protocol v.19.73...<br>
+            Checking memory... OK.<br>
+            Loading KGB decryptors... <span class="glitch-text">ERROR/RETRY</span>... OK.<br>
+            Connecting to unsecured line...<br>
+            <br>
+        </div>
+        <div id="output"></div>
+        <div class="input-line hidden" id="input-container">
+            <span class="prompt">MGF-73\USER></span>
+            <input type="text" id="command-input" autofocus autocomplete="off">
+            <span class="cursor-blink">_</span>
+        </div>
+    </div>
+
+    <script>
+        const outputDiv = document.getElementById('output');
+        const inputContainer = document.getElementById('input-container');
+        const commandInput = document.getElementById('command-input');
+        const bootSequence = document.getElementById('boot-sequence');
+		const keypressSound = new Audio('keypress.mp3'); // Замените на путь к вашему файлу
+		keypressSound.volume = 0.3; // Регулировка громкости
+
+        // Эффект печатной машинки для вывода текста
+        function typeWriter(text, element, speed = 30, callback) {
+            let i = 0;
+            element.innerHTML += "\n";
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    // Прокрутка вниз при вводе
+                    document.getElementById('crt-screen').scrollTop = document.getElementById('crt-screen').scrollHeight;
+                    setTimeout(type, speed);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        // Начальная загрузка
+        setTimeout(() => {
+            bootSequence.style.display = 'none';
+            typeWriter("ДОБРО ПОЖАЛОВАТЬ В АРХИВ.\nСТАТУС: КРАСНЫЙ УРОВЕНЬ ДОСТУПА.\n\nВведите команду. Для списка доступных команд введите 'ПОМОЩЬ' (HELP).", outputDiv, 30, () => {
+                inputContainer.classList.remove('hidden');
+                commandInput.focus();
+            });
+        }, 3000);
+
+
+        // База данных ответов
+        const responses = {
+            'ПОМОЩЬ': `ДОСТУПНЫЕ КОМАНДЫ:
+> ОПЕРАЦИЯ (информация о текущей миссии)
+> ДОСЬЕ (запрос информации об агенте)
+> ГДЕ ЯЙЦО (запрос местоположения объекта)
+> СИГНАЛ (прослушать перехваченный радиоэфир)
+> ОЧИСТИТЬ (очистить экран терминала)`,
+            
+            'HELP': `ДОСТУПНЫЕ КОМАНДЫ:
+> ОПЕРАЦИЯ (информация о текущей миссии)
+> ДОСЬЕ (запрос информации об агенте)
+> ГДЕ ЯЙЦО (запрос местоположения объекта)
+> СИГНАЛ (прослушать перехваченный радиоэфир)
+> ОЧИСТИТЬ (очистить экран терминала)`,
+
+            'ОПЕРАЦИЯ': `[ЗАПИСЬ #1973-A]
+Контекст: Холодная война перешла в фазу абсурда.
+Три разведки мира охотятся за артефактом "Яйцо Судьбы". 
+По неподтвержденным данным, оно дает владельцу способность управлять ценами на зерно и погодой в районе Балашихи.
+Единственный след ведёт к агенту под кодовым именем "Шип".`,
+
+            'ДОСЬЕ': `ВВЕДИТЕ ИМЯ ИЛИ КОД АГЕНТА:`,
+
+            'БОБОЛОНСКИ': `[ОБЪЕКТ НАЙДЕН]
+Имя: Боболонски (Bobolonski)
+Код: "Шип" (The Thorn)
+Вид: Вероятно, Anser anser (Серый гусь), но с признаками высокого интеллекта и никотиновой зависимостью.
+Статус: Внештатный агент, ренегат.
+Особые приметы: Плащ, шляпа, тотальное молчание, тяжелый взгляд. Не оставляет следов, только перья.
+ПРЕДУПРЕЖДЕНИЕ: Крайне опасен в ближнем бою (использует клюв и чемодан).`,
+
+            'ШИП': `См. досье "БОБОЛОНСКИ".`,
+
+            'ГДЕ ЯЙЦО': `[ОШИБКА ДОСТУПА]
+Данные засекречены уровнем "Кремль-Омега".
+Последняя известная локация агента Боболонски: Москва, район Чистых прудов, телефонная будка №4.
+Он ждет связного.`,
+
+            'СИГНАЛ': `[ВОСПРОИЗВЕДЕНИЕ ПЕРЕХВАТА...]
+(Шум статики, треск)
+Голос 1 (искаженный): "Птица в гнезде. Повторяю, птица в гнезде."
+Голос 2 (нервный): "А чемодан? У него чемодан?"
+Голос 1: "Он смотрит на меня. Боже, эти глаза... Он... он достает хлебную корку."
+(Резкий звук удара, громкое ГОГОТАНИЕ, помехи)
+[КОНЕЦ ЗАПИСИ]`,
+            
+            'ГОГОТАТЬ': `ВНИМАНИЕ! ОБНАРУЖЕНА ПОПЫТКА ПРОВОКАЦИИ. 
+ТЕРМИНАЛ ПЕРЕХОДИТ В РЕЖИМ ОЖИДАНИЯ КГБ.
+(Шутка. Но больше так не делайте.)`,
+             'HONK': `HONK HONK HONK HONK HONK. SYSTEM OVERLOAD.`,
+        };
+
+        let awaitingSpecificInput = false;
+
+        // Обработка ввода команд
+        commandInput.addEventListener('keypress', function (e) {
+			if (!e.repeat) {
+			   // Клонируем узел аудио, чтобы можно было воспроизводить быстро подряд
+			   const soundClone = keypressSound.cloneNode();
+			   soundClone.play();
+			}
+            if (e.key === 'Enter') {
+                const command = this.value.toUpperCase().trim();
+                this.value = '';
+                inputContainer.classList.add('hidden');
+                
+                outputDiv.innerHTML += `\nMGF-73\\USER> ${command}\n`;
+
+                if (command === 'ОЧИСТИТЬ' || command === 'CLEAR') {
+                    outputDiv.innerHTML = '';
+                    inputContainer.classList.remove('hidden');
+                    commandInput.focus();
+                    return;
+                }
+
+                let response = '';
+
+                if (awaitingSpecificInput) {
+                    if (command === 'БОБОЛОНСКИ' || command === 'BOBOLONSKI') {
+                         response = responses['БОБОЛОНСКИ'];
+                    } else if (command === 'ШИП') {
+                         response = responses['ШИП'];
+                    } else {
+                        response = `[ОШИБКА] Агент "${command}" не найден в базе данных или был ликвидирован.`;
+                    }
+                    awaitingSpecificInput = false;
+                } else {
+                    if (responses[command]) {
+                        response = responses[command];
+                        if (command === 'ДОСЬЕ') awaitingSpecificInput = true;
+                    } else {
+                        response = `НЕИЗВЕСТНАЯ КОМАНДА. Введите 'ПОМОЩЬ' для списка.`;
+                    }
+                }
+
+                typeWriter(response, outputDiv, 20, () => {
+                    inputContainer.classList.remove('hidden');
+                    commandInput.focus();
+                    // Всегда держим фокус на вводе
+                });
+				
+            }
+        });
+
+        // Клик по экрану возвращает фокус в поле ввода
+        document.getElementById('crt-screen').addEventListener('click', () => {
+            commandInput.focus();
+        });
+
+    </script>
+</body>
+</html>
